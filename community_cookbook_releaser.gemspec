@@ -3,7 +3,7 @@ Gem::Specification.new do |s|
   s.version = "0.1.1"
   s.platform = Gem::Platform::RUBY
   s.extra_rdoc_files = ["README.md", "LICENSE"]
-  s.summary = "A systems integration framework, built to bring the benefits of configuration management to your entire infrastructure."
+  s.summary = "A simple script in gem form for releasing chef managed community cookbooks."
   s.description = s.summary
   s.license = "Apache-2.0"
   s.author = "Tim Smith"
