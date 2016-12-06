@@ -72,7 +72,7 @@ def write_updated_changelog
   File.open('CHANGELOG.md', 'r').each_line do |line|
     if line =~ /^This file/
       temp_content << "#{line}\n"
-      temp_content << "## #{@new_version} (#{Time.now.strftime('%Y-%m-%d')})\n"
+      temp_content << "## #{@new_version} (#{Time.now.strftime('%Y-%m-%d')})\n\n"
       changes_since_last_tag.each do |change|
         temp_content << "- #{change}\n"
       end
