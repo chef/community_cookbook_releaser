@@ -49,6 +49,10 @@ def bump_version(old_version)
   bumped.join('.')
 end
 
+def current_metadata_version
+  File.open('metadata.rb').read.match(/version\s*'(\d*.\d*.\d*)'/)[1]
+end
+
 def prompted_new_version
   current_version = File.open('metadata.rb').read.match(/version\s*'(\d*.\d*.\d*)'/)[1]
   next_version = bump_version(current_version)
@@ -60,19 +64,23 @@ def prompted_new_version
   next_version
 end
 
-def update_metadata_version
+# update the version line in a way that we maintain formatting and don't accidently
+# match a depends line further down in the cookbook with the same string
+def update_metadata_version(old_version, new_version)
   contents = File.read('metadata.rb')
-  new_contents = contents.gsub(/version\s*'(\d*.\d*.\d*)'/, "version '#{@new_version}'") # forget formatting!
+  old_version_line = /^version.*/.match(contents)[0]
+  new_version_line = old_version_line.gsub(old_version, new_version)
+  new_contents = contents.gsub(old_version_line, new_version_line)
   File.open('metadata.rb', 'w') { |file| file.write(new_contents) }
 end
 
-def write_updated_changelog
+def write_updated_changelog(new_version)
   temp_content = ''
   # read in the old content to a tempstring and insert our new content where appropriate
   File.open('CHANGELOG.md', 'r').each_line do |line|
     if line =~ /^This file/
       temp_content << "#{line}\n"
-      temp_content << "## #{@new_version} (#{Time.now.strftime('%Y-%m-%d')})\n\n"
+      temp_content << "## #{new_version} (#{Time.now.strftime('%Y-%m-%d')})\n\n"
       changes_since_last_tag.each do |change|
         temp_content << "- #{change}\n"
       end
@@ -109,8 +117,8 @@ fail_if_cb_files
 # load the YAML config
 @config = parse_config
 
-@new_version = prompted_new_version
-update_metadata_version
-write_updated_changelog
+new_cookbook_version = prompted_new_version
+update_metadata_version(current_metadata_version, new_cookbook_version)
+write_updated_changelog(new_cookbook_version)
 
 puts "\nVersion bumped & changelog written out with each commit as an item. Now edit, commit, and release!"
