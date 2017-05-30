@@ -24,7 +24,7 @@ def fail_if_cb_files
     exit 1
   end
 
-  unless File.open('metadata.rb').read =~ /version\s*'\d*.\d*.\d*'/
+  unless File.open('metadata.rb').read =~ /version\s*('|")\d*.\d*.\d*('|")/
     puts_red("metadata.rb doesn't appear to have a valid version string!")
     exit 1
   end
@@ -50,11 +50,11 @@ def bump_version(old_version)
 end
 
 def current_metadata_version
-  File.open('metadata.rb').read.match(/version\s*'(\d*.\d*.\d*)'/)[1]
+  File.open('metadata.rb').read.match(/version\s*('|")(\d*.\d*.\d*)('|")/)[2]
 end
 
 def prompted_new_version
-  current_version = File.open('metadata.rb').read.match(/version\s*'(\d*.\d*.\d*)'/)[1]
+  current_version = File.open('metadata.rb').read.match(/version\s*('|")(\d*.\d*.\d*)('|")/)[2]
   next_version = bump_version(current_version)
 
   print "New version to release [autobump to #{next_version}]: "
