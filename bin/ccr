@@ -33,14 +33,20 @@ end
 def parse_config
   file_or_error('~/.ccr_config.yml')
 
-  config = YAML.load_file(File.expand_path('~/.ccr_config.yml'))
+  yconfig = YAML.load_file(File.expand_path('~/.ccr_config.yml'))
+  yconfig['github_organization'] ||= 'chef-cookbooks'
 
-  unless config['token']
+  unless yconfig['token']
     puts_red("~/.ccr_config.yml does not contain a 'token' value. Cannot continue without a Github token!")
     exit 1
   end
 
-  config
+  yconfig
+end
+
+def config
+  @config ||= parse_config
+  @config
 end
 
 def bump_version(old_version)
@@ -94,11 +100,11 @@ def write_updated_changelog(new_version)
 end
 
 def changes_since_last_tag
-  client = Octokit::Client.new(access_token: @config['token'])
+  client = Octokit::Client.new(access_token: config['token'])
   Octokit.auto_paginate = true
   cb_name = File.split(Dir.getwd)[-1]
-  last_tag_sha = client.tags("chef-cookbooks/#{cb_name}")[0][:commit][:sha]
-  commit_data = client.compare("chef-cookbooks/#{cb_name}", last_tag_sha, 'master')
+  last_tag_sha = client.tags("#{config['github_organization']}/#{cb_name}")[0][:commit][:sha]
+  commit_data = client.compare("#{config['github_organization']}/#{cb_name}", last_tag_sha, 'master')
   commit_messages = []
   commit_data['commits'].each do |commit|
     msg = commit['commit']['message'].split("\n")[0] # get just the commit title not the entire thing
@@ -113,9 +119,6 @@ puts "\e[3mA simple script to aid in version bumps and changelog generation for 
 
 # make sure the world of cookbooks looks like we're assuming
 fail_if_cb_files
-
-# load the YAML config
-@config = parse_config
 
 new_cookbook_version = prompted_new_version
 update_metadata_version(current_metadata_version, new_cookbook_version)
