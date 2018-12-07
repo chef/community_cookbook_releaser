@@ -16,5 +16,5 @@ Gem::Specification.new do |s|
   s.bindir       = "bin"
   s.executables  = %w{ ccr }
 
-  s.files = %w{LICENSE README.md}
+  s.files = %w{LICENSE}
 end
