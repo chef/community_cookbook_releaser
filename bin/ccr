@@ -46,7 +46,6 @@ end
 
 def config
   @config ||= parse_config
-  @config
 end
 
 def bump_version(old_version)
@@ -109,6 +108,7 @@ def changes_since_last_tag
   commit_data['commits'].each do |commit|
     msg = commit['commit']['message'].split("\n")[0] # get just the commit title not the entire thing
     next if msg =~ /^Merge pull request.*/
+    msg << " - [@#{commit[:author][:login]}](#{commit[:author][:html_url]})"
     commit_messages << msg
   end
   commit_messages
