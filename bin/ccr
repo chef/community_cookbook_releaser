@@ -108,7 +108,8 @@ def changes_since_last_tag
   commit_data['commits'].each do |commit|
     msg = commit['commit']['message'].split("\n")[0] # get just the commit title not the entire thing
     next if msg =~ /^Merge pull request.*/
-    msg << " - [@#{commit[:author][:login]}](#{commit[:author][:html_url]})"
+
+    msg << " - [@#{commit[:author][:login]}](#{commit[:author][:html_url]})" unless commit[:author].nil? # author is nil if the account was deleted before the merge happened
     commit_messages << msg
   end
   commit_messages
