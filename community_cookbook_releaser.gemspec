@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.email = "tsmith@chef.io"
   s.homepage = "https://www.chef.io"
 
-  s.required_ruby_version = ">= 2.2.0"
+  s.required_ruby_version = ">= 2.3.0"
   s.add_dependency "octokit"
 
   s.bindir       = "bin"
