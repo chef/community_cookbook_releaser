@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
-require 'time'
-require 'yaml'
-require 'octokit'
+require "time"
+require "yaml"
+require "octokit"
 
 def puts_red(text)
   puts "\033[31m#{text}\e[0m"
@@ -16,27 +16,27 @@ def file_or_error(filename)
 end
 
 def fail_if_cb_files
-  file_or_error('metadata.rb')
-  file_or_error('CHANGELOG.md')
+  file_or_error("metadata.rb")
+  file_or_error("CHANGELOG.md")
 
-  unless File.open('CHANGELOG.md').read =~ /This file is used/
-    puts_red('CHANGELOG.md is not in the standard changelog format. Cannot determine where to insert new changes!')
+  unless File.open("CHANGELOG.md").read =~ /This file is used/
+    puts_red("CHANGELOG.md is not in the standard changelog format. Cannot determine where to insert new changes!")
     exit 1
   end
 
-  unless File.open('metadata.rb').read =~ /version\s*('|")\d*.\d*.\d*('|")/
+  unless File.open("metadata.rb").read =~ /version\s*('|")\d*.\d*.\d*('|")/
     puts_red("metadata.rb doesn't appear to have a valid version string!")
     exit 1
   end
 end
 
 def parse_config
-  file_or_error('~/.ccr_config.yml')
+  file_or_error("~/.ccr_config.yml")
 
-  yconfig = YAML.load_file(File.expand_path('~/.ccr_config.yml'))
-  yconfig['github_organization'] ||= 'chef-cookbooks'
+  yconfig = YAML.load_file(File.expand_path("~/.ccr_config.yml"))
+  yconfig["github_organization"] ||= "chef-cookbooks"
 
-  unless yconfig['token']
+  unless yconfig["token"]
     puts_red("~/.ccr_config.yml does not contain a 'token' value. Cannot continue without a Github token!")
     exit 1
   end
@@ -49,43 +49,43 @@ def config
 end
 
 def bump_version(old_version)
-  bumped = old_version.split('.').map(&:to_i)
+  bumped = old_version.split(".").map(&:to_i)
   bumped[2] += 1
-  bumped.join('.')
+  bumped.join(".")
 end
 
 def current_metadata_version
-  File.open('metadata.rb').read.match(/version\s*('|")(\d*.\d*.\d*)('|")/)[2]
+  File.open("metadata.rb").read.match(/version\s*('|")(\d*.\d*.\d*)('|")/)[2]
 end
 
 def prompted_new_version
-  current_version = File.open('metadata.rb').read.match(/version\s*('|")(\d*.\d*.\d*)('|")/)[2]
+  current_version = File.open("metadata.rb").read.match(/version\s*('|")(\d*.\d*.\d*)('|")/)[2]
   next_version = bump_version(current_version)
 
   print "New version to release [autobump to #{next_version}]: "
 
   provided = gets.chomp
-  next_version = provided unless provided == '' # use the auto increment if nothing provided
+  next_version = provided unless provided == "" # use the auto increment if nothing provided
   next_version
 end
 
 # update the version line in a way that we maintain formatting and don't accidently
 # match a depends line further down in the cookbook with the same string
 def update_metadata_version(old_version, new_version)
-  contents = File.read('metadata.rb')
+  contents = File.read("metadata.rb")
   old_version_line = /^version.*/.match(contents)[0]
   new_version_line = old_version_line.gsub(old_version, new_version)
   new_contents = contents.gsub(old_version_line, new_version_line)
-  File.open('metadata.rb', 'w') { |file| file.write(new_contents) }
+  File.open("metadata.rb", "w") { |file| file.write(new_contents) }
 end
 
 def write_updated_changelog(new_version)
-  temp_content = ''
+  temp_content = ""
   # read in the old content to a tempstring and insert our new content where appropriate
-  File.open('CHANGELOG.md', 'r').each_line do |line|
+  File.open("CHANGELOG.md", "r").each_line do |line|
     if line =~ /^This file/
       temp_content << "#{line}\n"
-      temp_content << "## #{new_version} (#{Time.now.strftime('%Y-%m-%d')})\n\n"
+      temp_content << "## #{new_version} (#{Time.now.strftime("%Y-%m-%d")})\n\n"
       changes_since_last_tag.each do |change|
         temp_content << "- #{change}\n"
       end
@@ -95,18 +95,18 @@ def write_updated_changelog(new_version)
   end
 
   # write out our updated changelog content
-  File.open('CHANGELOG.MD', 'w') { |file| file.write(temp_content) }
+  File.open("CHANGELOG.MD", "w") { |file| file.write(temp_content) }
 end
 
 def changes_since_last_tag
-  client = Octokit::Client.new(access_token: config['token'])
+  client = Octokit::Client.new(access_token: config["token"])
   Octokit.auto_paginate = true
   cb_name = File.split(Dir.getwd)[-1]
-  last_tag_sha = client.tags("#{config['github_organization']}/#{cb_name}")[0][:commit][:sha]
-  commit_data = client.compare("#{config['github_organization']}/#{cb_name}", last_tag_sha, 'master')
+  last_tag_sha = client.tags("#{config["github_organization"]}/#{cb_name}")[0][:commit][:sha]
+  commit_data = client.compare("#{config["github_organization"]}/#{cb_name}", last_tag_sha, "master")
   commit_messages = []
-  commit_data['commits'].each do |commit|
-    msg = commit['commit']['message'].split("\n")[0] # get just the commit title not the entire thing
+  commit_data["commits"].each do |commit|
+    msg = commit["commit"]["message"].split("\n")[0] # get just the commit title not the entire thing
     next if msg =~ /^Merge pull request.*/
 
     msg << " - [@#{commit[:author][:login]}](#{commit[:author][:html_url]})" unless commit[:author].nil? # author is nil if the account was deleted before the merge happened
