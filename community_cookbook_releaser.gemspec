@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = "community_cookbook_releaser"
-  s.version = "1.1.0"
+  s.version = "1.2.0"
   s.extra_rdoc_files = ["README.md", "LICENSE"]
   s.summary = "A simple script in gem form for releasing chef managed community cookbooks."
   s.description = s.summary
