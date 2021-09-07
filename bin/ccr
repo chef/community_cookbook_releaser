@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
-require "time"
-require "yaml"
+require "time" unless defined?(Time.zone_offset)
+require "yaml" unless defined?(YAML)
 require "octokit"
 
 def puts_red(text)
@@ -103,7 +103,7 @@ def changes_since_last_tag
   Octokit.auto_paginate = true
   cb_name = File.split(Dir.getwd)[-1]
   last_tag_sha = client.tags("#{config["github_organization"]}/#{cb_name}")[0][:commit][:sha]
-  commit_data = client.compare("#{config["github_organization"]}/#{cb_name}", last_tag_sha, "master")
+  commit_data = client.compare("#{config["github_organization"]}/#{cb_name}", last_tag_sha, "main")
   commit_messages = []
   commit_data["commits"].each do |commit|
     msg = commit["commit"]["message"].split("\n")[0] # get just the commit title not the entire thing
